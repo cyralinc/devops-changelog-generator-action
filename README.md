@@ -1,27 +1,49 @@
-# template-repo
+# Changelog Generator Action
 
-Use this template to create new repositories in our organization. **After** creating the new repo, follow the steps below:
+Cyral automated change log generator tool published in GitHub Marketplace.
 
-* [Create a personal access token in your GitHub account](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) and enable all `repo` scope permissions;
-* Assign the access token value and the repository name to the following script and run it:
+## Usage
+Such action depends on a docker login to Google Cloud Registry.
+So, make sure your login credentials have permissions to access `gcr.io/cyral-dev`.
+Also, the target repository must fetch all history for tags.
+A `CHANGELOG.md` file will be generated after execute the generator.
 
+```yaml
+steps:
+- uses: actions/checkout@v2
+  with:
+    fetch-depth: 0
+
+- uses: docker/login-action@v1
+  with:
+    registry: gcr.io
+    username: _json_key
+    password: ${{ secrets.GCR_JSON_TOKEN }}
+  
+- uses: cyralinc/changelog-generator@v1
+  name: Generate changelog
+  with:
+    # The target tag which the changelog will be generated.
+    # REQUIRED
+    tag: ${{ github.ref_name }}
+
+    # Repository owner and name in the format <owner>/<name>
+    # REQUIRED
+    repository: ${{ github.repository }}
+
+    # Jira ticket prefixes, separated by comma
+    # REQUIRED
+    jira-prefixes: FOO,BAR
+
+    # Github's Personal Access Token with access to clone all dependency
+    # repositories. It is required only if the target repository has
+    # dependencies to be listed in the changelog.
+    # NOT REQUIRED
+    credentials: ${{secrets.PERSONAL_ACCESS_TOKEN_TO_CLONE_DEPENDENCY_REPOS }}
+
+    # The JSON configuration for the dependency repositories.
+    # It is required only if the target repository has dependencies to be
+    # listed in the changelog.
+    # NOT REQUIRED
+    dependencies-config: ${{secrets.JSON_REPOSITORIES_CONFIG}}
 ```
-ACCESS_TOKEN=your_access_token
-REPO=your_repo_name
-
-echo "Defining repo configuration settings..."
-curl -X PATCH \
-     -H "Authorization: token $ACCESS_TOKEN" \
-     -H "Accept: application/vnd.github.v3+json" \
-     -d '{"has_wiki":false,"has_projects":false,"has_issues":false,"allow_squash_merge":true,"allow_merge_commit":false,"allow_rebase_merge":false,"delete_branch_on_merge":true,"auto_merge":false}' \
-     https://api.github.com/repos/cyralinc/${REPO}
-
-echo "Defining protection rules for 'main' branch..."
-curl -X PUT \
-     -H "Authorization: token $ACCESS_TOKEN" \
-     -H "Accept: application/vnd.github.luke-cage-preview+json" \
-     -d '{"required_status_checks":null,"enforce_admins":true,"required_pull_request_reviews":{"required_approving_review_count":1},"restrictions":null}' \
-     https://api.github.com/repos/cyralinc/${REPO}/branches/main/protection
-```
-
-* Update this file and define a `README.md` that suits your new repository.
