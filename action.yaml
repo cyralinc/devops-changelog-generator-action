@@ -1,5 +1,5 @@
 # action.yml
-name: 'Changelog Generator'
+name: 'Cyral Changelog Generator'
 description: 'Generate a CHANGELOG.md file for the cureent repository'
 inputs:
   tag:  # id of input
@@ -31,6 +31,6 @@ runs:
       git config --global credential.helper store
       git config --global --replace-all url.https://github.com/.insteadOf ssh://git@github.com/
       git config --global --add url.https://github.com/.insteadOf git@github.com:
-      echo -e "${{ inputs.dependencies-config }}" >> /changelog-generator/config.json
-      /changelog-generator/generator -tag=${{ inputs.tag }} -jira-prefixes=${{ inputs.jira-prefixes }} -repository=${{ inputs.repository }} /github/workspace
+      echo -e "${{ inputs.dependencies-config }}" > /changelog-generator/config.json
+      /changelog-generator/generator -tag=${{ inputs.tag }} -jira-prefixes=${{ inputs.jira-prefixes }} -repository=${{ inputs.repository }} -config=/changelog-generator/config.json /github/workspace
   entrypoint: /bin/ash

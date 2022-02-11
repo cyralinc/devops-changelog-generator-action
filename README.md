@@ -5,7 +5,8 @@ Cyral automated change log generator tool published in GitHub Marketplace.
 ## Usage
 Such action depends on a docker login to Google Cloud Registry.
 So, make sure your login credentials have permissions to access `gcr.io/cyral-dev`.
-Also, the target repository must fetch all history for tags:
+Also, the target repository must fetch all history for tags.
+A `CHANGELOG.md` file will be generated after execute the generator.
 
 ```yaml
 steps:
