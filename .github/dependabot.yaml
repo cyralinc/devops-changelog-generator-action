@@ -1,0 +1,16 @@
+# Set update schedule for Google Cloud Resgistry images
+version: 2
+registries:
+  gcr: # Define access for a private registry 
+    type: docker-registry
+    url: gcr.io
+    username: _json_key
+    password: ${{ secrets.GCR_CYRAL_DEV_JSON_TOKEN }}
+
+updates:
+  - package-ecosystem: "docker"
+    directory: "/"
+    registries:
+      - gcr # Allow version updates for dependencies in this registry
+    schedule:
+      interval: "daily"

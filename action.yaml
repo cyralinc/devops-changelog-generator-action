@@ -1,0 +1,36 @@
+# action.yml
+name: 'Changelog Generator'
+description: 'Generate a CHANGELOG.md file for the cureent repository'
+inputs:
+  tag:  # id of input
+    description: 'Target tag to generate the changelog'
+    required: true
+  repository:
+    description: 'Repository name of the target'
+    required: true
+  jira-prefixes:
+    description: 'Jira ticket prefixes separated by comma'
+    required: true
+  credentials:
+    description: 'github personal access token'
+    required: false
+  dependencies-config:
+    description: 'Dependencies configuration in JSON format'
+    required: false
+    default: {}
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - "-c"
+    - |
+      mkdir -p ~/.config
+      mkdir -p ~/.config/git
+      echo -e "\n" >> ~/.config/git/credentials
+      echo -e "${{ inputs.credentials }}" >> ~/.config/git/credentials
+      git config --global credential.helper store
+      git config --global --replace-all url.https://github.com/.insteadOf ssh://git@github.com/
+      git config --global --add url.https://github.com/.insteadOf git@github.com:
+      echo -e "${{ inputs.dependencies-config }}" >> /changelog-generator/config.json
+      /changelog-generator/generator -tag=${{ inputs.tag }} -jira-prefixes=${{ inputs.jira-prefixes }} -repository=${{ inputs.repository }} /github/workspace
+  entrypoint: /bin/ash
