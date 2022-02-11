@@ -1,3 +1,3 @@
 # Changelog Generator Action
 
-Github action to generate changelogs given a repository tag.
+Cyral automated change log generator tool published in GitHub Marketplace.
