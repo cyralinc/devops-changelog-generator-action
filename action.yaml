@@ -14,10 +14,11 @@ inputs:
   credentials:
     description: 'github personal access token'
     required: false
+    default: ""
   dependencies-config:
     description: 'Dependencies configuration in JSON format'
     required: false
-    default: {}
+    default: '{}'
 runs:
   using: 'docker'
   image: 'Dockerfile'
