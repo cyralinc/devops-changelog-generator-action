@@ -3,16 +3,18 @@
 Cyral automated change log generator tool published in GitHub Marketplace.
 
 ## Usage
-Such action depends on a docker login to Google Cloud Registry.
-So, make sure your login credentials have permissions to access `gcr.io/cyral-dev`.
-Also, the target repository must fetch all history for tags.
-A `CHANGELOG.md` file will be generated after execute the generator.
+The tool requires docker to login to our private container registry, thus make
+sure your login credentials have permissions to access it.
+
+The downloaded image will then fetch all the git history for the given
+repository, perform the comparison from the informed tag and the previous one and
+finally create a `CHANGELOG.md` file and associate it with the git release.
 
 ```yaml
 steps:
 - uses: actions/checkout@v2
   with:
-    fetch-depth: 0
+    fetch-depth: 0 # Downloads the whole commit history
 
 - uses: docker/login-action@v1
   with:
