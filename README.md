@@ -20,7 +20,7 @@ steps:
     username: _json_key
     password: ${{ secrets.GCR_JSON_TOKEN }}
   
-- uses: cyralinc/changelog-generator@v1
+- uses: cyralinc/devops-changelog-generator-action@v1
   name: Generate changelog
   with:
     # The target tag which the changelog will be generated.
@@ -44,6 +44,7 @@ steps:
     # The JSON configuration for the dependency repositories.
     # It is required only if the target repository has dependencies to be
     # listed in the changelog.
+    # Ensure the JSON uses double quotes insted of single quotes.
     # NOT REQUIRED
     dependencies-config: ${{secrets.JSON_REPOSITORIES_CONFIG}}
 ```
