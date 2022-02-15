@@ -11,27 +11,56 @@ inputs:
   jira-prefixes:
     description: 'Jira ticket prefixes separated by comma'
     required: true
-  credentials:
+  git-credentials:
     description: 'github personal access token'
     required: false
+    default: ''
+  gcr-credentials:
+    description: 'GCR JSON token'
+    required: true
     default: ''
   dependencies-config:
     description: 'Dependencies configuration in JSON format'
     required: false
     default: '{}'
+
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
-  args:
-    - '-c'
-    - |
-      mkdir -p ~/.config
-      mkdir -p ~/.config/git
-      echo -e '\n' >> ~/.config/git/credentials
-      echo -e '${{ inputs.credentials }}' >> ~/.config/git/credentials
-      git config --global credential.helper store
-      git config --global --replace-all url.https://github.com/.insteadOf ssh://git@github.com/
-      git config --global --add url.https://github.com/.insteadOf git@github.com:
-      echo -e '${{ inputs.dependencies-config }}' > /changelog-generator/config.json
-      /changelog-generator/generator -tag=${{ inputs.tag }} -jira-prefixes=${{ inputs.jira-prefixes }} -repository=${{ inputs.repository }} -config=/changelog-generator/config.json /github/workspace
-  entrypoint: /bin/ash
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - uses: docker/login-action@v1
+      with:
+        registry: gcr.io
+        username: _json_key
+        password: ${{ inputs.gcr-credentials }}
+
+    - name: Build docker images
+      run: docker build -t="generator" $GITHUB_ACTION_PATH
+      shell: bash
+
+    - name: Run changelog
+      run: |
+          docker run --workdir /github/workspace --entrypoint /bin/ash \
+          -v $GITHUB_WORKSPACE:/github/workspace \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v /home/runner/work/_temp/_github_home:/github/home \
+          generator \
+          '-c' \
+          'mkdir -p ~/.config
+          mkdir -p ~/.config/git 
+          echo -e '\n' >> ~/.config/git/credentials
+          cat >> ~/.config/git/credentials <<EOF
+          ${{ inputs.git-credentials }}
+          EOF
+          git config --global credential.helper store
+          git config --global --replace-all url.https://github.com/.insteadOf ssh://git@github.com/
+          git config --global --add url.https://github.com/.insteadOf git@github.com:
+          cat > /changelog-generator/config.json  <<EOF
+          ${{ inputs.dependencies-config }}
+          EOF
+          /changelog-generator/generator -tag=${{ inputs.tag }} -jira-prefixes=${{ inputs.jira-prefixes }} -repository=${{ inputs.repository }} -config=/changelog-generator/config.json /github/workspace'
+
+      shell: bash
