@@ -1,1 +1,1 @@
-FROM gcr.io/cyral-dev/cyral-devops-changelog-generator:15e3b184-5166-4a4a-b790-9f412def39e1
+FROM gcr.io/cyral-dev/cyral-devops-changelog-generator:71efadf8-dd68-4c2c-93ac-35e946062f41
